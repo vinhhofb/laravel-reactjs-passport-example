@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as faceapi from 'face-api.js';
 import Webcam from 'react-webcam';
+import axios from 'axios';
 
-const FaceRecognition = () => {
+const FaceRecognition = ({status, setStatus, fetchUserData}) => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [checkin, setCheckin] = useState(false);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
@@ -37,7 +39,6 @@ const FaceRecognition = () => {
   useEffect(() => {
     const handleVideoOnPlay = async () => {
       if (!modelsLoaded) return;
-
       const intervalId = setInterval(async () => {
         if (webcamRef.current && webcamRef.current.video.readyState === 4) {
           const video = webcamRef.current.video;
@@ -46,15 +47,12 @@ const FaceRecognition = () => {
             .withFaceDescriptors();
 
           const resizedDetections = faceapi.resizeResults(detections, { width: video.videoWidth, height: video.videoHeight });
-
           canvasRef.current.getContext('2d').clearRect(0, 0, video.videoWidth, video.videoHeight);
 
           faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
           faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
 
           if (imageRef.current && imageRef.current.descriptor) {
-
-            // Create a LabeledFaceDescriptors object
             const labeledFaceDescriptors = new faceapi.LabeledFaceDescriptors('label', [imageRef.current.descriptor]);
             const faceMatcher = new faceapi.FaceMatcher([labeledFaceDescriptors]);
 
@@ -66,11 +64,13 @@ const FaceRecognition = () => {
               const drawBox = new faceapi.draw.DrawBox(box, { label: `${label} (${Math.round(distance * 100) / 100})` });
               drawBox.draw(canvasRef.current);
               console.log(distance)
-              if (distance < 0.2) { // Adjust threshold as needed
-                console.log('ok')
-                
+              if (distance < 0.2) {
+                handleCheckIn()
+                setStatus('Checkin Success')
+                fetchUserData()
+                clearInterval(intervalId);
               }else{
-                console.log('Match found:', { label, distance });
+                setStatus('Please try again');
               }
             });
           }
@@ -85,11 +85,27 @@ const FaceRecognition = () => {
     }
   }, [modelsLoaded]);
 
+  const handleCheckIn = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      await axios.get('http://127.0.0.1:8000/api/checkin', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+    } catch (error) {
+      console.error('Failed to fetch user data', error);
+    }
+  };
+
   return (
     <div style={{ position: 'relative' }}>
       <img ref={imageRef} src="https://raw.githubusercontent.com/vinhhofb/laravel-reactjs-passport-example/main/client/public/abc.jpg" alt="Model" crossOrigin="anonymous" style={{ display: 'none' }} />
       <Webcam ref={webcamRef} />
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0 }} />
+      <p className="text-center">{status}</p>
     </div>
   );
 };
