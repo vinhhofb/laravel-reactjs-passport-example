@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import FaceRecognition from './FaceRecognition';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -42,24 +43,46 @@ const Profile = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-4">Profile</h2>
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-          </div>
-        ) : (
-          <div>
-            <p className="text-lg font-medium">Name: {user.name}</p>
-            <p className="text-lg font-medium">Email: {user.email}</p>
-            <button 
-              onClick={handleLogout} 
-              className="w-full bg-blue-600 text-white py-2 mt-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              Logout
-            </button>
-          </div>
-        )}
+      <div className="flex bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl">
+        <div className="w-1/2 pr-4">
+          <h2 className="text-2xl font-bold mb-4">User Data</h2>
+          <table className="table-auto w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border border-gray-300 px-4 py-2">ID</th>
+                <th className="border border-gray-300 px-4 py-2">Name</th>
+                <th className="border border-gray-300 px-4 py-2">Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border border-gray-300 px-4 py-2">{user ? user.id : ''}</td>
+                <td className="border border-gray-300 px-4 py-2">{user ? user.name : ''}</td>
+                <td className="border border-gray-300 px-4 py-2">{user ? user.email : ''}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="w-1/2 p-4">
+          <h2 className="text-2xl font-bold mb-4">Profile</h2>
+          {loading ? (
+            <div className="flex justify-center items-center">
+              <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            </div>
+          ) : (
+            <div>
+              {/* <FaceRecognition/> */}
+              <p className="text-lg font-medium">Name: {user.name}</p>
+              <p className="text-lg font-medium">Email: {user.email}</p>
+              <button 
+                onClick={handleLogout} 
+                className="w-full bg-blue-600 text-white py-2 mt-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

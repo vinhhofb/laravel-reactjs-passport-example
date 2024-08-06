@@ -1,0 +1,97 @@
+import React, { useEffect, useRef, useState } from 'react';
+import * as faceapi from 'face-api.js';
+import Webcam from 'react-webcam';
+
+const FaceRecognition = () => {
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const webcamRef = useRef(null);
+  const canvasRef = useRef(null);
+  const imageRef = useRef(null);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      const MODEL_URL = '/models';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      setModelsLoaded(true);
+    };
+
+    const loadReferenceImage = async () => {
+      const img = imageRef.current;
+
+      if (img) {
+        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+          console.log(detection)
+        if (detection) {
+          img.descriptor = detection.descriptor;
+        }
+      }
+    };
+
+    loadModels().then(loadReferenceImage);
+  }, []);
+
+  useEffect(() => {
+    const handleVideoOnPlay = async () => {
+      if (!modelsLoaded) return;
+
+      const intervalId = setInterval(async () => {
+        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+          const video = webcamRef.current.video;
+          const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+          const resizedDetections = faceapi.resizeResults(detections, { width: video.videoWidth, height: video.videoHeight });
+
+          canvasRef.current.getContext('2d').clearRect(0, 0, video.videoWidth, video.videoHeight);
+
+          faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
+          faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
+
+          if (imageRef.current && imageRef.current.descriptor) {
+
+            // Create a LabeledFaceDescriptors object
+            const labeledFaceDescriptors = new faceapi.LabeledFaceDescriptors('label', [imageRef.current.descriptor]);
+            const faceMatcher = new faceapi.FaceMatcher([labeledFaceDescriptors]);
+
+            const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
+
+            results.forEach((result, i) => {
+              const box = resizedDetections[i].detection.box;
+              const { label, distance } = result;
+              const drawBox = new faceapi.draw.DrawBox(box, { label: `${label} (${Math.round(distance * 100) / 100})` });
+              drawBox.draw(canvasRef.current);
+              console.log(distance)
+              if (distance < 0.2) { // Adjust threshold as needed
+                console.log('ok')
+                
+              }else{
+                console.log('Match found:', { label, distance });
+              }
+            });
+          }
+        }
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    };
+
+    if (modelsLoaded) {
+      handleVideoOnPlay();
+    }
+  }, [modelsLoaded]);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <img ref={imageRef} src="https://raw.githubusercontent.com/vinhhofb/laravel-reactjs-passport-example/main/client/public/abc.jpg" alt="Model" crossOrigin="anonymous" style={{ display: 'none' }} />
+      <Webcam ref={webcamRef} />
+      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0 }} />
+    </div>
+  );
+};
+
+export default FaceRecognition;
