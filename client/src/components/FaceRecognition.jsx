@@ -5,7 +5,6 @@ import axios from 'axios';
 
 const FaceRecognition = ({status, setStatus, fetchUserData}) => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [checkin, setCheckin] = useState(false);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
