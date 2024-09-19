@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -47,8 +48,21 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $user = auth()->user();
+        $user = auth()->user()->load(['userImageModels']);
+  
+       
 
-        return response()->json(['user' => $user, 'token' => $user->createToken('Personal Access Token')->plainTextToken]);
+        return response()->json([
+            'user' => $user,
+            'token' => $user->createToken('Personal Access Token')->plainTextToken
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }

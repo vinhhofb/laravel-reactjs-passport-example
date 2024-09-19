@@ -8,7 +8,8 @@ const FaceRecognition = ({status, setStatus, fetchUserData}) => {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
-
+  const userAuth = JSON.parse(localStorage.getItem('user'));
+  console.log(userAuth.user_image_models[0].file_name)
   useEffect(() => {
     const loadModels = async () => {
       const MODEL_URL = '/models';
@@ -88,7 +89,7 @@ const FaceRecognition = ({status, setStatus, fetchUserData}) => {
     try {
       const token = localStorage.getItem('token');
 
-      await axios.get('http://127.0.0.1:8000/api/checkin', {
+      await axios.get(`${process.env.REACT_APP_API_URL}/api/checkin`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -101,7 +102,7 @@ const FaceRecognition = ({status, setStatus, fetchUserData}) => {
 
   return (
     <div style={{ position: 'relative' }}>
-      <img ref={imageRef} src="https://raw.githubusercontent.com/vinhhofb/laravel-reactjs-passport-example/main/client/public/abc.jpg" alt="Model" crossOrigin="anonymous" style={{ display: 'none' }} />
+      <img ref={imageRef} src={`${process.env.REACT_APP_API_URL}/user-image-models/${userAuth.user_image_models[0].file_name}`} alt="Model" style={{ display: 'none' }} crossOrigin="anonymous" />
       <Webcam ref={webcamRef} />
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0 }} />
       <p className="text-center">{status}</p>
