@@ -10,7 +10,7 @@ import Header from './components/Header/Header';
 function App() {
   return (
     <Router>
-      <Header /> {/* Add Header component */}
+      {/* <Header /> */}
       <main className="p-4">
         <Routes>
           <Route path="/login" element={<LoginForm />} />

@@ -2,9 +2,14 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\EmployeeDetailController;
+use App\Http\Controllers\EmployeeInfomationController;
+use App\Http\Controllers\EmployeeLeaveBalanceController;
+use App\Http\Controllers\EmployeeSalaryController;
+use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserImageModelController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +28,36 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/checkin', [AttendanceController::class, 'checkin']);
     Route::post('/upload-image', [UserImageModelController::class, 'captureModel']);
     Route::get('/user-image-models', [UserImageModelController::class, 'getUserImages']);
+
+    Route::post('/employee/create', [UserController::class, 'createEmployee']);
+    Route::get('/countries', [CountryController::class, 'index']);
+
+
+    Route::prefix('employees')->group(function () {
+        Route::get('/', [EmployeeInfomationController::class, 'index']);
+        Route::get('/{user_id}', [EmployeeInfomationController::class, 'show']);
+    });
+
+    Route::prefix('employees-detail')->group(function () {
+        Route::get('/', [EmployeeDetailController::class, 'index']);
+        Route::put('/{id}', [EmployeeDetailController::class, 'update']);
+    });
+
+    Route::prefix('employee-leave-balance')->group(function () {
+        Route::get('/', [EmployeeLeaveBalanceController::class, 'index']);
+        Route::put('/{id}', [EmployeeLeaveBalanceController::class, 'update']);
+    });
+
+    Route::prefix('employee-salaries')->group(function () {
+        Route::get('/', [EmployeeSalaryController::class, 'index']);
+        Route::put('/{id}', [EmployeeSalaryController::class, 'update']);
+    });
+
+    Route::prefix('leave-requests')->group(function () {
+        Route::get('/', [LeaveRequestController::class, 'index']);
+        Route::post('/create', [LeaveRequestController::class, 'store']);
+    });
+
 });
 
 

@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->integer('type')->default(2);
-            $table->rememberToken()->nullable();
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->string('reason');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->bigInteger('user_id');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('leave_requests');
     }
 };
